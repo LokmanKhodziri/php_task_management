@@ -2,63 +2,49 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
+use App\Models\Project;
+use App\Models\Task;
 
 class TaskController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function create(Project $project)
     {
-        //
+        $this->authorize('view', $project);
+
+        return view('tasks.create', compact('project'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StoreTaskRequest $request, Project $project)
     {
-        //
+        $this->authorize('view', $project);
+        $project->tasks()->create($request->validated());
+
+        return redirect()->route('projects.show', $project)->with('success', 'Task created.');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function edit(Task $task)
     {
-        //
+        $this->authorize('update', $task);
+
+        return view('tasks.edit', compact('task'));
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(UpdateTaskRequest $request, Task $task)
     {
-        //
+        $this->authorize('update', $task);
+        $task->update($request->validated());
+
+        return redirect()->route('projects.show', $task->project)->with('success', 'Task updated.');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function destroy(Task $task)
     {
-        //
-    }
+        $this->authorize('delete', $task);
+        $project = $task->project;
+        $task->delete();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('projects.show', $project)->with('success', 'Task deleted.');
     }
 }
